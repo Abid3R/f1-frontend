@@ -11,3 +11,15 @@ export async function fetchDriverStandings() {
 
   return response.json();
 }
+
+export async function fetchRaceSchedule(year = 2026) {
+  const response = await fetch(`${API_BASE}/api/races/schedule?year=${year}`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch race schedule");
+  }
+
+  return response.json();
+}
