@@ -24,6 +24,10 @@ export default function RootLayout({
             Standings
           </Link>
 
+          <Link href="/drivers" className="hover:text-red-400">
+            Drivers
+          </Link>
+
           <Link href="/races" className="hover:text-red-400">
             Races
           </Link>

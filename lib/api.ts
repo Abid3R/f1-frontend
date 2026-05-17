@@ -23,3 +23,14 @@ export async function fetchRaceSchedule(year = 2026) {
 
   return response.json();
 }
+export async function fetchCurrentDrivers() {
+  const response = await fetch(`${API_BASE}/api/drivers/current`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch current drivers");
+  }
+
+  return response.json();
+}
