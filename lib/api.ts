@@ -23,6 +23,7 @@ export async function fetchRaceSchedule(year = 2026) {
 
   return response.json();
 }
+
 export async function fetchCurrentDrivers() {
   const response = await fetch(`${API_BASE}/api/drivers/current`, {
     cache: "no-store",
@@ -30,6 +31,22 @@ export async function fetchCurrentDrivers() {
 
   if (!response.ok) {
     throw new Error("Failed to fetch current drivers");
+  }
+
+  return response.json();
+}
+
+export async function fetchPitStopDemoPrediction(features: object) {
+  const response = await fetch(`${API_BASE}/api/predict/pitstop-demo`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(features),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch pit stop prediction");
   }
 
   return response.json();
