@@ -20,7 +20,7 @@ const features = [
     description:
       "Live championship table with points, wins and team data pulled from your FastAPI backend.",
     href: "/standings",
-    image: "/images/standings-f1-car.jpg",
+    image: "/images/driver_standings.jpg",
     icon: BarChart3,
     delay: "delay-100",
   },
@@ -38,7 +38,7 @@ const features = [
     description:
       "Complete 2026 F1 race calendar with circuit locations and round-by-round schedule data.",
     href: "/races",
-    image: "/images/race-track.jpg",
+    image: "/images/race_schedule.jpg",
     icon: Calendar,
     delay: "delay-300",
   },
@@ -47,7 +47,7 @@ const features = [
     description:
       "ML-powered demo that estimates pit stop likelihood based on tyre life, lap data and race position.",
     href: "/predictions",
-    image: "/images/pit-stop.jpg",
+    image: "/images/pit_stop_prediction.jpg",
     icon: Cpu,
     delay: "delay-400",
   },
@@ -243,18 +243,27 @@ export default function Home() {
                 href={feat.href}
                 className={`professional-card rounded-2xl overflow-hidden group animate-fade-up ${feat.delay} flex flex-col`}
               >
-                {/* Card image area */}
-                <div className="relative h-44 bg-gradient-to-br from-neutral-900 to-neutral-950 overflow-hidden shrink-0">
+                {/* Card image area — full-bleed, no border/padding/letterboxing */}
+                <div className="relative h-52 bg-gradient-to-br from-neutral-900 to-neutral-950 overflow-hidden shrink-0">
                   <ClientImage
                     src={feat.image}
                     alt={feat.title}
-                    className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-110 transition-all duration-700"
+                    className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-700"
+                    style={{ border: "none", margin: 0, padding: 0, borderWidth: 0 }}
                   />
                   {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                  {/* Red corner accent */}
+                  <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-red-600/80 via-red-500/40 to-transparent" />
                   {/* Fallback icon (shows if no image) */}
                   <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-red-600/20 border border-red-600/30 flex items-center justify-center">
                     <Icon size={20} className="text-red-400" />
+                  </div>
+                  {/* Title stamp at bottom of image */}
+                  <div className="absolute bottom-0 left-0 right-0 px-5 pb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <p className="text-[10px] font-black text-red-400 uppercase tracking-[0.22em]">
+                      {feat.title}
+                    </p>
                   </div>
                 </div>
 
