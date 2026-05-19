@@ -29,25 +29,30 @@ type SortKey = "standing" | "points" | "wins" | "name";
 // To add more drivers — copy any commented line, remove the //, update the name:
 // ─────────────────────────────────────────────────────────────────────────────
 const driverImageOverrides: Record<string, string> = {
-  // ── The 4 showcase drivers (per image mapping guide) ──────────────────────
+  // ── All 21 drivers — one entry per driver ─────────────────────────────────
   "Max Verstappen":          "/images/max_verstappen.jpg",
-  "Lewis Hamilton":          "/images/lewis_hamilton.jpg",
-  "Charles Leclerc":         "/images/charles_leclerc.jpg",
-  "Lando Norris":            "/images/lando_norris.jpg",
-
-  // ── All remaining drivers with confirmed image files ─────────────────────
-  "George Russell":          "/images/george_russell.jpg",
-  "Carlos Sainz":            "/images/carlos_sainz.jpg",
-  "Oscar Piastri":           "/images/oscar_piastri.png",   // PNG
-  "Pierre Gasly":            "/images/pierre_gasly.jpg",
-  "Andrea Kimi Antonelli":   "/images/andrea_kimi_antonelli.jpg",
-  "Kimi Antonelli":          "/images/andrea_kimi_antonelli.jpg", // API alias
-  "Franco Colapinto":        "/images/franco_colapinto.png", // PNG
-  "Gabriel Bortoleto":       "/images/gabriel_bortoleto.jpg",
-  "Isack Hadjar":            "/images/isack_hadjar.png",     // PNG
-  "Arvid Lindblad":          "/images/arvid_lindblad.jpg",
   "Liam Lawson":             "/images/liam_lawson.jpg",
+  "George Russell":          "/images/george_russell.jpg",
+  "Andrea Kimi Antonelli":   "/images/andrea_kimi_antonelli.jpg",
+  "Kimi Antonelli":          "/images/andrea_kimi_antonelli.jpg", // API short alias
+  "Charles Leclerc":         "/images/charles_leclerc.jpg",
+  "Lewis Hamilton":          "/images/lewis_hamilton.jpg",
+  "Lando Norris":            "/images/lando_norris.jpg",
+  "Oscar Piastri":           "/images/oscar_piastri.png",    // PNG
+  "Fernando Alonso":         "/images/fernando_alonso.jpg",
+  "Lance Stroll":            "/images/lance_stroll.jpg",
+  "Pierre Gasly":            "/images/pierre_gasly.jpg",
+  "Esteban Ocon":            "/images/esteban_ocon.jpg",
+  "Alexander Albon":         "/images/alexander_albon.jpg",
+  "Carlos Sainz":            "/images/carlos_sainz.jpg",
   "Oliver Bearman":          "/images/oliver_bearman.jpeg",  // JPEG
+  "Isack Hadjar":            "/images/isack_hadjar.png",     // PNG
+  "Valtteri Bottas":         "/images/valtteri_bottas.jpg",
+  "Gabriel Bortoleto":       "/images/gabriel_bortoleto.jpg",
+  "Nico Hülkenberg":         "/images/nico_hulkenberg.jpg",
+  "Nico Hulkenberg":         "/images/nico_hulkenberg.jpg",  // ASCII alias
+  "Franco Colapinto":        "/images/franco_colapinto.png", // PNG
+  "Arvid Lindblad":          "/images/arvid_lindblad.jpg",
 };
 
 /** Auto-derives the image path from a driver's full name.
