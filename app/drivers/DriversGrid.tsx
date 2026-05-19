@@ -53,6 +53,8 @@ const driverImageOverrides: Record<string, string> = {
   "Nico Hulkenberg":         "/images/nico_hulkenberg.jpg",  // ASCII alias
   "Franco Colapinto":        "/images/franco_colapinto.png", // PNG
   "Arvid Lindblad":          "/images/arvid_lindblad.jpg",
+  "Sergio Pérez":            "/images/sergio_perez.jpg",
+  "Sergio Perez":            "/images/sergio_perez.jpg",  // ASCII alias
 };
 
 /** Auto-derives the image path from a driver's full name.

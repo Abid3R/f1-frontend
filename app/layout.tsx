@@ -108,20 +108,6 @@ export default function RootLayout({
               </div>
             </div>
 
-            {/* Bottom bar */}
-            <div className="border-t border-neutral-900 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-neutral-700 text-sm">
-                Built with{" "}
-                <span className="text-neutral-500">Next.js &amp; FastAPI</span>{" "}
-                · F1 Intel Demo Project
-              </p>
-              <p className="text-neutral-700 text-xs">
-                GitHub:{" "}
-                <span className="text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer">
-                  github.com/your-username/f1-project
-                </span>
-              </p>
-            </div>
           </div>
         </footer>
       </body>
