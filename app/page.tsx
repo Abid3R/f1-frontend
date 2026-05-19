@@ -21,6 +21,7 @@ const features = [
       "Live championship table with points, wins and team data pulled from your FastAPI backend.",
     href: "/standings",
     image: "/images/driver_standings.jpg",
+    video: "/videos/standings-3d.mp4",
     icon: BarChart3,
     delay: "delay-100",
   },
@@ -30,6 +31,7 @@ const features = [
       "Full grid of current F1 drivers with nationality, team, number and performance stats.",
     href: "/drivers",
     image: "/images/drivers-f1.jpg",
+    video: "/videos/drivers-3d.mp4",
     icon: Users,
     delay: "delay-200",
   },
@@ -39,6 +41,7 @@ const features = [
       "Complete 2026 F1 race calendar with circuit locations and round-by-round schedule data.",
     href: "/races",
     image: "/images/race_schedule.jpg",
+    video: "/videos/races-3d.mp4",
     icon: Calendar,
     delay: "delay-300",
   },
@@ -48,6 +51,7 @@ const features = [
       "ML-powered demo that estimates pit stop likelihood based on tyre life, lap data and race position.",
     href: "/predictions",
     image: "/images/pit_stop_prediction.jpg",
+    video: "/videos/predictions-3d.mp4",
     icon: Cpu,
     delay: "delay-400",
   },
@@ -244,7 +248,18 @@ export default function Home() {
                 className={`professional-card rounded-2xl overflow-hidden group animate-fade-up ${feat.delay} flex flex-col`}
               >
                 {/* Card image area — full-bleed, no border/padding/letterboxing */}
-                <div className="relative h-52 bg-gradient-to-br from-neutral-900 to-neutral-950 overflow-hidden shrink-0">
+                <div className="relative h-52 bg-[#0a0a0a] overflow-hidden shrink-0">
+                  {/* 3D video — always present, animates even without photo files */}
+                  <video
+                    src={feat.video}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover opacity-55 group-hover:opacity-80 transition-opacity duration-700"
+                    style={{ border: "none", borderWidth: 0, margin: 0, padding: 0 }}
+                  />
+                  {/* Optional photo overlay — renders on top when available */}
                   <ClientImage
                     src={feat.image}
                     alt={feat.title}
@@ -253,13 +268,13 @@ export default function Home() {
                   />
                   {/* Gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                  {/* Red corner accent */}
-                  <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-red-600/80 via-red-500/40 to-transparent" />
-                  {/* Fallback icon (shows if no image) */}
-                  <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-red-600/20 border border-red-600/30 flex items-center justify-center">
+                  {/* Red top accent line */}
+                  <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-red-600 via-red-500/50 to-transparent" />
+                  {/* Icon badge — always visible */}
+                  <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-red-600/20 border border-red-600/30 flex items-center justify-center backdrop-blur-sm">
                     <Icon size={20} className="text-red-400" />
                   </div>
-                  {/* Title stamp at bottom of image */}
+                  {/* Hover title stamp */}
                   <div className="absolute bottom-0 left-0 right-0 px-5 pb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <p className="text-[10px] font-black text-red-400 uppercase tracking-[0.22em]">
                       {feat.title}
