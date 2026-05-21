@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Navbar from "./components/Navbar";
+import ScrollProgressBar from "./components/ScrollProgressBar";
+import BackToTopButton from "./components/BackToTopButton";
+import CommandPalette from "./components/CommandPalette";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -34,7 +37,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className="bg-[#080808] text-white antialiased">
+        <ScrollProgressBar />
         <Navbar />
+        <CommandPalette />
+        <BackToTopButton />
 
         <div className="pt-16">{children}</div>
 

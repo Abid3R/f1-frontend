@@ -1,5 +1,7 @@
 import Link from "next/link";
 import ClientImage from "./components/ClientImage";
+import NextRaceCountdown from "./components/NextRaceCountdown";
+import LiveStatsTicker from "./components/LiveStatsTicker";
 import {
   BarChart3,
   Users,
@@ -219,6 +221,16 @@ export default function Home() {
         {/* Bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#080808] to-transparent pointer-events-none" />
       </section>
+
+      {/* ================================================================
+          1b. NEXT RACE COUNTDOWN (live)
+          ================================================================ */}
+      <NextRaceCountdown />
+
+      {/* ================================================================
+          1c. LIVE F1 FACTS TICKER
+          ================================================================ */}
+      <LiveStatsTicker />
 
       {/* ================================================================
           2. FEATURE CARDS SECTION
