@@ -14,6 +14,8 @@ import {
   TrendingUp,
   RotateCcw,
 } from "lucide-react";
+import PredictionPresets, { PresetScenario } from "../components/PredictionPresets";
+import PredictionHistory, { pushHistoryItem } from "../components/PredictionHistory";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface FormState {
@@ -155,6 +157,14 @@ export default function PredictionsPage() {
       const data = await fetchPitStopDemoPrediction(form);
       setResult(data);
 
+      // Persist into local history (used by PredictionHistory component)
+      pushHistoryItem({
+        driver: data.driver,
+        compound: data.compound,
+        percentage: data.percentage,
+        will_pit: data.will_pit,
+      });
+
       setTimeout(() => {
         resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
@@ -171,6 +181,12 @@ export default function PredictionsPage() {
 
   function handleReset() {
     setForm(defaultForm);
+    setResult(null);
+    setError("");
+  }
+
+  function applyPreset(preset: PresetScenario["values"]) {
+    setForm((previous) => ({ ...previous, ...preset }));
     setResult(null);
     setError("");
   }
@@ -240,6 +256,9 @@ export default function PredictionsPage() {
           PREDICTION SECTION
           ================================================================ */}
       <section className="px-6 py-10 pb-20 max-w-7xl mx-auto">
+        {/* Quick preset scenarios */}
+        <PredictionPresets onApply={applyPreset} />
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* ── INPUT FORM ───────────────────────────────────────────────── */}
           <div className="professional-card rounded-2xl p-6 animate-fade-left delay-100">
@@ -492,6 +511,11 @@ export default function PredictionsPage() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Prediction history (localStorage-backed) */}
+        <div className="mt-6">
+          <PredictionHistory />
         </div>
 
         {/* ── Info banner ──────────────────────────────────────────────────── */}

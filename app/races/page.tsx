@@ -1,6 +1,8 @@
 import { fetchRaceSchedule } from "@/lib/api";
 import ClientImage from "../components/ClientImage";
 import { AlertCircle, MapPin, Clock, Globe, Flag } from "lucide-react";
+import SeasonProgress from "../components/SeasonProgress";
+import RaceStatusBadge from "../components/RaceStatusBadge";
 
 interface Race {
   meeting_key?: string | number;
@@ -204,6 +206,9 @@ export default async function RacesPage() {
 
         {!apiError && races.length > 0 && (
           <div>
+            {/* Season progress timeline */}
+            <SeasonProgress races={races} />
+
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-neutral-300">
                 2026 FIA Formula 1 World Championship
@@ -260,9 +265,12 @@ export default async function RacesPage() {
 
                         {/* Race name & location */}
                         <div className="flex-1 min-w-0">
-                          <h2 className="text-base md:text-lg font-black group-hover:text-red-400 transition-colors leading-tight truncate">
-                            {race.meeting_name ?? "Race name not available"}
-                          </h2>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h2 className="text-base md:text-lg font-black group-hover:text-red-400 transition-colors leading-tight truncate">
+                              {race.meeting_name ?? "Race name not available"}
+                            </h2>
+                            <RaceStatusBadge dateStr={race.date_start} />
+                          </div>
                           {(race.location || race.country_name) && (
                             <div className="flex items-center gap-1.5 mt-1 text-xs text-neutral-500">
                               <MapPin size={11} className="text-red-700 shrink-0" />

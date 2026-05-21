@@ -1,5 +1,6 @@
 import { fetchDriverStandings } from "@/lib/api";
 import { Trophy, Users, Star, TrendingUp, AlertCircle } from "lucide-react";
+import StandingsPodium from "../components/StandingsPodium";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface DriverStanding {
@@ -159,6 +160,13 @@ export default async function StandingsPage() {
             ))}
           </div>
         </section>
+      )}
+
+      {/* ================================================================
+          PODIUM SHOWCASE
+          ================================================================ */}
+      {!apiError && standings.length >= 3 && (
+        <StandingsPodium standings={standings} />
       )}
 
       {/* ================================================================
