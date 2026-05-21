@@ -213,9 +213,9 @@ export default function PredictionsPage() {
               <span className="text-red-600">Prediction</span>
             </h1>
             <p className="text-neutral-400 max-w-2xl text-lg leading-relaxed">
-              Enter the current race situation. The demo ML model on your
-              FastAPI backend estimates whether the driver will pit on the next
-              lap.
+              Enter the current race situation. A LightGBM model trained on
+              439,000 real F1 laps estimates whether the driver will pit on the
+              next lap.
             </p>
 
             <div className="flex items-center gap-5 mt-6 flex-wrap">
@@ -226,9 +226,9 @@ export default function PredictionsPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-blue-500" />
-                <span className="text-blue-400 text-xs font-bold uppercase tracking-wider">
-                  Demo ML Model
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-dot-pulse" />
+                <span className="text-green-400 text-xs font-bold uppercase tracking-wider">
+                  LightGBM · AUC 0.92
                 </span>
               </div>
             </div>
@@ -349,7 +349,7 @@ export default function PredictionsPage() {
               <div>
                 <h2 className="text-lg font-black">Prediction Result</h2>
                 <p className="text-xs text-neutral-600">
-                  ML model output via FastAPI
+                  LightGBM model · trained on 439k laps
                 </p>
               </div>
             </div>
@@ -502,17 +502,18 @@ export default function PredictionsPage() {
             </div>
             <div>
               <p className="font-bold text-neutral-300 text-sm mb-1">
-                About This Demo Model
+                About This Model
               </p>
               <p className="text-neutral-500 text-xs leading-relaxed max-w-2xl">
-                This prediction is powered by a demo ML model served via your
-                FastAPI backend at{" "}
+                Powered by a LightGBM classifier trained on 439,000 real F1
+                laps (2022–2025), achieving{" "}
+                <span className="text-neutral-300 font-semibold">AUC 0.92</span>{" "}
+                on held-out races. Served via FastAPI at{" "}
                 <code className="text-red-400 bg-red-950/40 px-1.5 py-0.5 rounded text-[11px]">
                   POST /api/predict/pitstop-demo
                 </code>
-                . Uses tyre life, lap time delta, race progress and position
-                change to estimate pit stop likelihood. Not a real F1 strategy
-                tool.
+                . Key signals: tyre age, compound, cumulative degradation, lap
+                time delta and race progress.
               </p>
             </div>
           </div>
