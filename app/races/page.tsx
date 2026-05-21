@@ -11,6 +11,69 @@ interface Race {
   gmt_offset?: string;
 }
 
+// ── Circuit image lookup ──────────────────────────────────────────────────────
+// Keys are lowercase substrings matched against meeting_name + country_name + location.
+// Ordered from most-specific to least-specific so "las vegas" beats a generic "united states".
+const CIRCUIT_IMAGES: [string, string][] = [
+  ["las vegas",      "/images/circuits/las-vegas.jpg"],
+  ["abu dhabi",      "/images/circuits/abu-dhabi.png"],
+  ["emilia",         "/images/circuits/emilia-romagna.png"],
+  ["romagna",        "/images/circuits/emilia-romagna.png"],
+  ["imola",          "/images/circuits/emilia-romagna.png"],
+  ["sao paulo",      "/images/circuits/sao-paulo.jpg"],
+  ["são paulo",      "/images/circuits/sao-paulo.jpg"],
+  ["brazil",         "/images/circuits/sao-paulo.jpg"],
+  ["saudi",          "/images/circuits/saudi-arabia.jpg"],
+  ["jeddah",         "/images/circuits/saudi-arabia.jpg"],
+  ["australia",      "/images/circuits/australia.jpg"],
+  ["melbourne",      "/images/circuits/australia.jpg"],
+  ["bahrain",        "/images/circuits/bahrain.jpg"],
+  ["japan",          "/images/circuits/japan.jpg"],
+  ["suzuka",         "/images/circuits/japan.jpg"],
+  ["china",          "/images/circuits/china.png"],
+  ["shanghai",       "/images/circuits/china.png"],
+  ["monaco",         "/images/circuits/monaco.png"],
+  ["canada",         "/images/circuits/canada.jpg"],
+  ["montreal",       "/images/circuits/canada.jpg"],
+  ["spain",          "/images/circuits/spain.jpg"],
+  ["spanish",        "/images/circuits/spain.jpg"],
+  ["barcelona",      "/images/circuits/spain.jpg"],
+  ["austria",        "/images/circuits/austria.jpg"],
+  ["spielberg",      "/images/circuits/austria.jpg"],
+  ["britain",        "/images/circuits/britain.jpg"],
+  ["british",        "/images/circuits/britain.jpg"],
+  ["silverstone",    "/images/circuits/britain.jpg"],
+  ["hungary",        "/images/circuits/hungary.jpg"],
+  ["budapest",       "/images/circuits/hungary.jpg"],
+  ["belgium",        "/images/circuits/belgium.jpg"],
+  ["spa",            "/images/circuits/belgium.jpg"],
+  ["netherlands",    "/images/circuits/netherlands.jpg"],
+  ["dutch",          "/images/circuits/netherlands.jpg"],
+  ["zandvoort",      "/images/circuits/netherlands.jpg"],
+  ["italy",          "/images/circuits/italy.jpg"],
+  ["italian",        "/images/circuits/italy.jpg"],
+  ["monza",          "/images/circuits/italy.jpg"],
+  ["azerbaijan",     "/images/circuits/azerbaijan.png"],
+  ["baku",           "/images/circuits/azerbaijan.png"],
+  ["singapore",      "/images/circuits/singapore.png"],
+  ["mexico",         "/images/circuits/mexico.jpg"],
+  ["qatar",          "/images/circuits/qatar.jpg"],
+  ["lusail",         "/images/circuits/qatar.jpg"],
+];
+
+function getCircuitImage(race: Race): string | null {
+  const haystack = [race.meeting_name, race.country_name, race.location]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  for (const [key, path] of CIRCUIT_IMAGES) {
+    if (haystack.includes(key)) return path;
+  }
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function ErrorCard({ message }: { message: string }) {
   return (
     <div className="max-w-7xl mx-auto px-6 py-16">
@@ -32,7 +95,6 @@ function ErrorCard({ message }: { message: string }) {
   );
 }
 
-/** Format a date string nicely. */
 function formatDate(dateStr?: string) {
   if (!dateStr) return { date: "Date not available", time: "" };
   try {
@@ -74,10 +136,8 @@ export default async function RacesPage() {
           HERO
           ================================================================ */}
       <section className="relative px-6 py-24 overflow-hidden min-h-[50vh] flex items-center">
-        {/* CSS gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-black via-neutral-950 to-red-950/20" />
 
-        {/* 3D animation video */}
         <video
           src="/videos/races-3d.mp4"
           autoPlay
@@ -87,17 +147,14 @@ export default async function RacesPage() {
           className="absolute inset-0 w-full h-full object-cover opacity-28"
         />
 
-        {/* Overlays */}
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-black/30" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_left,rgba(220,38,38,0.2),transparent_55%)]" />
 
-        {/* Track lines */}
         <div className="track-container absolute inset-0">
           <div className="track-line" style={{ top: "42%" }} />
           <div className="track-line track-line-2" style={{ top: "68%" }} />
         </div>
 
-        {/* Bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#080808] to-transparent" />
 
         <div className="relative max-w-7xl mx-auto w-full">
@@ -128,24 +185,11 @@ export default async function RacesPage() {
       </section>
 
       {/* ================================================================
-          CIRCUIT MAP IMAGE (optional)
-          ================================================================ */}
-      <div className="max-w-7xl mx-auto px-6 mt-4">
-        <ClientImage
-          src="/images/circuit-map.png"
-          alt="F1 circuit map"
-          className="w-full h-40 object-cover rounded-2xl opacity-40 border border-neutral-800/40"
-        />
-      </div>
-
-      {/* ================================================================
           CONTENT
           ================================================================ */}
       <section className="px-6 py-10 pb-20 max-w-7xl mx-auto">
-        {/* Error state */}
         {apiError && <ErrorCard message={apiError} />}
 
-        {/* Empty state */}
         {!apiError && races.length === 0 && (
           <div className="text-center py-20 glass-card rounded-2xl border border-neutral-800/50 p-12">
             <Globe size={40} className="text-neutral-700 mx-auto mb-4" />
@@ -154,12 +198,10 @@ export default async function RacesPage() {
             </p>
             <p className="text-neutral-600 text-sm">
               The 2026 schedule data may not be available yet in the OpenF1 API.
-              Check back later or try a different year.
             </p>
           </div>
         )}
 
-        {/* Race cards */}
         {!apiError && races.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-6">
@@ -169,83 +211,93 @@ export default async function RacesPage() {
               <span className="f1-badge">{races.length} Rounds</span>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-3">
               {races.map((race, idx) => {
                 const { date, time } = formatDate(race.date_start);
                 const roundNum = idx + 1;
+                const circuitImg = getCircuitImage(race);
 
                 return (
                   <div
                     key={race.meeting_key ?? idx}
                     className="professional-card rounded-2xl overflow-hidden animate-fade-up group"
-                    style={{ animationDelay: `${idx * 0.035}s` }}
+                    style={{ animationDelay: `${idx * 0.03}s` }}
                   >
                     <div className="flex flex-col md:flex-row">
-                      {/* ── Left accent strip ── */}
-                      <div className="md:w-2 bg-gradient-to-b from-red-600 to-red-900 shrink-0 h-1.5 md:h-auto md:w-2 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none" />
+                      {/* Red left accent strip */}
+                      <div className="md:w-[3px] bg-gradient-to-b from-red-500 to-red-900/40 shrink-0 h-[3px] md:h-auto rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none" />
 
-                      {/* ── Main content ── */}
-                      <div className="flex flex-col md:flex-row md:items-center gap-5 p-5 md:p-6 flex-1 min-w-0">
+                      {/* Main content row */}
+                      <div className="flex items-center gap-4 px-5 py-4 flex-1 min-w-0">
+
                         {/* Round badge */}
-                        <div className="shrink-0">
-                          <div className="w-14 h-14 rounded-xl bg-red-950/40 border border-red-900/30 flex flex-col items-center justify-center">
-                            <span className="text-[10px] text-red-600 font-bold uppercase tracking-wider">
-                              R
-                            </span>
-                            <span className="text-2xl font-black text-red-400 leading-none">
-                              {roundNum}
-                            </span>
-                          </div>
+                        <div className="shrink-0 w-12 h-12 rounded-xl bg-neutral-900 border border-neutral-800/80 flex flex-col items-center justify-center">
+                          <span className="text-[9px] text-red-600 font-bold uppercase tracking-widest leading-none mb-0.5">
+                            RND
+                          </span>
+                          <span className="text-xl font-black text-white leading-none">
+                            {roundNum}
+                          </span>
+                        </div>
+
+                        {/* Circuit image thumbnail */}
+                        <div className="shrink-0 w-20 h-14 md:w-24 md:h-16 rounded-lg overflow-hidden bg-neutral-900/80 border border-neutral-800/50 flex items-center justify-center">
+                          {circuitImg ? (
+                            <img
+                              src={circuitImg}
+                              alt={`${race.meeting_name ?? "circuit"} layout`}
+                              className="w-full h-full object-contain p-1.5 opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+                              style={{
+                                filter: "invert(1) brightness(0.85) sepia(0.3) hue-rotate(320deg) saturate(1.4)",
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Flag size={18} className="text-neutral-700" />
+                            </div>
+                          )}
                         </div>
 
                         {/* Race name & location */}
                         <div className="flex-1 min-w-0">
-                          <h2 className="text-xl md:text-2xl font-black group-hover:text-red-400 transition-colors leading-tight">
+                          <h2 className="text-base md:text-lg font-black group-hover:text-red-400 transition-colors leading-tight truncate">
                             {race.meeting_name ?? "Race name not available"}
                           </h2>
-                          <div className="flex flex-wrap items-center gap-3 mt-2">
-                            {(race.location || race.country_name) && (
-                              <div className="flex items-center gap-1.5 text-sm text-neutral-400">
-                                <MapPin
-                                  size={13}
-                                  className="text-red-600 shrink-0"
-                                />
+                          {(race.location || race.country_name) && (
+                            <div className="flex items-center gap-1.5 mt-1 text-xs text-neutral-500">
+                              <MapPin size={11} className="text-red-700 shrink-0" />
+                              <span className="truncate">
                                 {[race.location, race.country_name]
                                   .filter(Boolean)
                                   .join(", ")}
-                              </div>
-                            )}
-                            {race.country_name && (
-                              <div className="flex items-center gap-1.5 text-xs text-neutral-600">
-                                <Flag size={11} className="shrink-0" />
-                                {race.country_name}
-                              </div>
-                            )}
-                          </div>
+                              </span>
+                            </div>
+                          )}
                         </div>
 
-                        {/* Date & time card */}
-                        <div className="shrink-0 rounded-xl bg-neutral-900/70 border border-neutral-800/60 p-4 min-w-[200px]">
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <Clock size={12} className="text-red-500 shrink-0" />
-                            <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">
-                              Start Date
+                        {/* Date card */}
+                        <div className="shrink-0 hidden sm:block rounded-xl bg-neutral-900/60 border border-neutral-800/50 px-4 py-3 min-w-[180px] text-right">
+                          <div className="flex items-center justify-end gap-1.5 mb-1.5">
+                            <Clock size={10} className="text-red-600 shrink-0" />
+                            <p className="text-[9px] text-neutral-600 font-bold uppercase tracking-widest">
+                              Race Start
                             </p>
                           </div>
-                          <p className="font-bold text-sm text-white leading-snug">
+                          <p className="font-bold text-xs text-white leading-snug">
                             {date}
                           </p>
                           {time && (
-                            <p className="text-neutral-500 text-xs mt-1">
+                            <p className="text-neutral-600 text-[10px] mt-0.5">
                               {time}
                             </p>
                           )}
                           {race.gmt_offset && (
-                            <p className="text-neutral-700 text-[10px] mt-1.5">
+                            <p className="text-neutral-700 text-[9px] mt-1">
                               GMT {race.gmt_offset}
                             </p>
                           )}
                         </div>
+
                       </div>
                     </div>
                   </div>
