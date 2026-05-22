@@ -199,7 +199,7 @@ export default async function RacesPage() {
               No race schedule found for this year.
             </p>
             <p className="text-neutral-600 text-sm">
-              The 2026 schedule data may not be available yet in the OpenF1 API.
+              No schedule data returned from the backend.
             </p>
           </div>
         )}
