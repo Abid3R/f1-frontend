@@ -1,4 +1,7 @@
-import { Trophy, Medal, Award } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { Trophy, Medal, Award, User } from "lucide-react";
 
 interface DriverStanding {
   position: number;
@@ -9,41 +12,118 @@ interface DriverStanding {
   wins: number;
 }
 
+// ── Driver photo overrides (keep in sync with DriversGrid.tsx) ───────────────
+const driverImageOverrides: Record<string, string> = {
+  "Max Verstappen":          "/images/max_verstappen.jpg",
+  "Liam Lawson":             "/images/liam_lawson.jpg",
+  "George Russell":          "/images/george_russell_hd.avif",
+  "Andrea Kimi Antonelli":   "/images/andrea_kimi_antonelli_hd.avif",
+  "Kimi Antonelli":          "/images/andrea_kimi_antonelli_hd.avif",
+  "Charles Leclerc":         "/images/charles_leclerc_hd.webp",
+  "Lewis Hamilton":          "/images/lewis_hamilton.jpg",
+  "Lando Norris":            "/images/lando_norris.jpg",
+  "Oscar Piastri":           "/images/oscar_piastri.png",
+  "Fernando Alonso":         "/images/fernando_alonso.jpg",
+  "Lance Stroll":            "/images/lance_stroll.jpg",
+  "Pierre Gasly":            "/images/pierre_gasly.jpg",
+  "Esteban Ocon":            "/images/esteban_ocon.jpg",
+  "Alexander Albon":         "/images/alexander_albon.jpg",
+  "Carlos Sainz":            "/images/carlos_sainz.jpg",
+  "Oliver Bearman":          "/images/oliver_bearman.jpeg",
+  "Isack Hadjar":            "/images/isack_hadjar.png",
+  "Valtteri Bottas":         "/images/valtteri_bottas.jpg",
+  "Gabriel Bortoleto":       "/images/gabriel_bortoleto.jpg",
+  "Nico Hülkenberg":         "/images/nico_hulkenberg.jpg",
+  "Nico Hulkenberg":         "/images/nico_hulkenberg.jpg",
+  "Franco Colapinto":        "/images/franco_colapinto.png",
+  "Arvid Lindblad":          "/images/arvid_lindblad.jpg",
+  "Sergio Pérez":            "/images/sergio_perez.jpg",
+  "Sergio Perez":            "/images/sergio_perez.jpg",
+};
+
+function driverPhotoSrc(fullName: string): string {
+  return (
+    driverImageOverrides[fullName] ??
+    `/images/${fullName
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]/g, "")}.jpg`
+  );
+}
+
 const PODIUM_META = [
   {
     pos: 1,
     icon: Trophy,
     label: "P1 Leader",
-    height: "h-44",
+    height: "h-56",
+    photoH: "h-40",
     accent: "from-yellow-500 to-yellow-700",
     text: "text-yellow-400",
     border: "border-yellow-500/40",
     glow: "shadow-[0_0_60px_rgba(234,179,8,0.18)]",
+    ring: "ring-yellow-500/60",
   },
   {
     pos: 2,
     icon: Medal,
     label: "P2",
-    height: "h-36",
+    height: "h-48",
+    photoH: "h-32",
     accent: "from-neutral-300 to-neutral-500",
     text: "text-neutral-200",
     border: "border-neutral-500/40",
     glow: "shadow-[0_0_40px_rgba(212,212,212,0.10)]",
+    ring: "ring-neutral-400/60",
   },
   {
     pos: 3,
     icon: Award,
     label: "P3",
-    height: "h-28",
+    height: "h-44",
+    photoH: "h-28",
     accent: "from-amber-600 to-amber-800",
     text: "text-amber-400",
     border: "border-amber-700/40",
     glow: "shadow-[0_0_40px_rgba(180,83,9,0.18)]",
+    ring: "ring-amber-700/60",
   },
 ];
 
 // Visual order on the podium: P2 | P1 | P3
 const VISUAL_ORDER = [2, 1, 3];
+
+// Inline driver photo for the podium card. Falls back to icon avatar on error.
+function PodiumPhoto({
+  name,
+  className,
+}: {
+  name: string;
+  className?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  const src = driverPhotoSrc(name);
+
+  if (failed) {
+    return (
+      <div
+        className={`flex items-center justify-center bg-neutral-900/80 ${className ?? ""}`}
+      >
+        <User className="text-neutral-600" size={28} />
+      </div>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={name}
+      className={`object-cover object-top ${className ?? ""}`}
+      onError={() => setFailed(true)}
+    />
+  );
+}
 
 export default function StandingsPodium({
   standings,
@@ -98,10 +178,7 @@ export default function StandingsPodium({
               );
             }
 
-            const gap =
-              meta.pos === 1
-                ? 0
-                : leaderPoints - driver.points;
+            const gap = meta.pos === 1 ? 0 : leaderPoints - driver.points;
 
             return (
               <div
@@ -109,32 +186,40 @@ export default function StandingsPodium({
                 className={`relative rounded-xl border ${meta.border} bg-gradient-to-b from-neutral-950 to-black overflow-hidden ${meta.glow} flex flex-col`}
               >
                 {/* Top accent bar */}
-                <div
-                  className={`h-1 bg-gradient-to-r ${meta.accent}`}
-                />
+                <div className={`h-1 bg-gradient-to-r ${meta.accent}`} />
 
-                <div className={`relative ${meta.height} flex flex-col items-center justify-end p-4`}>
-                  {/* Background big position */}
+                {/* Driver photo area */}
+                <div className={`relative ${meta.photoH} overflow-hidden`}>
+                  <PodiumPhoto
+                    name={driver.driver}
+                    className="absolute inset-0 w-full h-full"
+                  />
+                  {/* Bottom gradient for text readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+
+                  {/* Position glyph behind */}
                   <span
                     aria-hidden
-                    className={`absolute -top-2 right-2 font-black opacity-[0.08] select-none ${meta.text}`}
-                    style={{ fontSize: "5rem", lineHeight: 1 }}
+                    className={`absolute top-1 right-2 font-black opacity-[0.18] select-none ${meta.text}`}
+                    style={{ fontSize: "3.5rem", lineHeight: 1 }}
                   >
                     {driver.position}
                   </span>
 
-                  {/* Icon */}
-                  <div className={`mb-2 ${meta.text}`}>
-                    <Icon size={meta.pos === 1 ? 28 : 22} />
+                  {/* Trophy/Medal/Award icon */}
+                  <div
+                    className={`absolute top-2 left-2 p-1.5 rounded-full bg-black/60 backdrop-blur-sm ${meta.text}`}
+                  >
+                    <Icon size={meta.pos === 1 ? 18 : 14} />
                   </div>
+                </div>
 
-                  {/* Driver name */}
-                  <p className="text-white font-black text-sm md:text-base text-center leading-tight truncate w-full">
+                {/* Name + team */}
+                <div className="relative px-3 pt-2 pb-2 text-center">
+                  <p className="text-white font-black text-sm md:text-base leading-tight truncate w-full">
                     {driver.driver}
                   </p>
-
-                  {/* Team */}
-                  <p className="text-[10px] text-neutral-500 font-semibold uppercase tracking-widest mt-0.5 text-center truncate w-full">
+                  <p className="text-[10px] text-neutral-500 font-semibold uppercase tracking-widest mt-0.5 truncate w-full">
                     {driver.team}
                   </p>
                 </div>

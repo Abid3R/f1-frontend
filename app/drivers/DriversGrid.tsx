@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, SlidersHorizontal, Trophy, Flag } from "lucide-react";
+import { Search, SlidersHorizontal, Trophy, Flag, CheckSquare, Square, ArrowLeftRight } from "lucide-react";
+import DriversStatsOverview from "../components/DriversStatsOverview";
+import TeamFilterChips from "../components/TeamFilterChips";
+import DriverCompare from "../components/DriverCompare";
 
 interface Driver {
   driver_id: string;
@@ -32,10 +35,10 @@ const driverImageOverrides: Record<string, string> = {
   // ── All 21 drivers — one entry per driver ─────────────────────────────────
   "Max Verstappen":          "/images/max_verstappen.jpg",
   "Liam Lawson":             "/images/liam_lawson.jpg",
-  "George Russell":          "/images/george_russell.jpg",
-  "Andrea Kimi Antonelli":   "/images/andrea_kimi_antonelli.jpg",
-  "Kimi Antonelli":          "/images/andrea_kimi_antonelli.jpg", // API short alias
-  "Charles Leclerc":         "/images/charles_leclerc.jpg",
+  "George Russell":          "/images/george_russell_hd.avif",
+  "Andrea Kimi Antonelli":   "/images/andrea_kimi_antonelli_hd.avif",
+  "Kimi Antonelli":          "/images/andrea_kimi_antonelli_hd.avif", // API short alias
+  "Charles Leclerc":         "/images/charles_leclerc_hd.webp",
   "Lewis Hamilton":          "/images/lewis_hamilton.jpg",
   "Lando Norris":            "/images/lando_norris.jpg",
   "Oscar Piastri":           "/images/oscar_piastri.png",    // PNG
@@ -124,7 +127,21 @@ function positionBadgeClass(pos?: number) {
 
 // ── Single driver card ────────────────────────────────────────────────────────
 // Extracted as its own component so the image-error state is per-card.
-function DriverCard({ driver, index }: { driver: Driver; index: number }) {
+function DriverCard({
+  driver,
+  index,
+  compareMode,
+  selected,
+  onToggle,
+  selectionDisabled,
+}: {
+  driver: Driver;
+  index: number;
+  compareMode: boolean;
+  selected: boolean;
+  onToggle: () => void;
+  selectionDisabled: boolean;
+}) {
   const [imgFailed, setImgFailed] = useState(false);
 
   const photoSrc   = driverPhotoSrc(driver.full_name);
@@ -136,9 +153,29 @@ function DriverCard({ driver, index }: { driver: Driver; index: number }) {
 
   return (
     <div
-      className="professional-card rounded-2xl overflow-hidden group animate-fade-up flex flex-col"
+      className={`professional-card rounded-2xl overflow-hidden group animate-fade-up flex flex-col relative ${
+        selected ? "ring-2 ring-red-500/70 shadow-[0_0_30px_rgba(220,38,38,0.35)]" : ""
+      }`}
       style={{ animationDelay: `${0.1 + index * 0.04}s` }}
     >
+      {/* Compare checkbox — only visible in compare mode */}
+      {compareMode && (
+        <button
+          onClick={onToggle}
+          disabled={selectionDisabled && !selected}
+          className={`absolute top-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold backdrop-blur-sm transition-all ${
+            selected
+              ? "bg-red-600 text-white border border-red-500 shadow-[0_0_18px_rgba(220,38,38,0.55)]"
+              : selectionDisabled
+              ? "bg-neutral-900/60 text-neutral-600 border border-neutral-800 cursor-not-allowed"
+              : "bg-black/60 text-neutral-200 border border-neutral-700/60 hover:border-red-500/60 hover:text-white"
+          }`}
+          aria-pressed={selected}
+        >
+          {selected ? <CheckSquare size={12} /> : <Square size={12} />}
+          {selected ? "Selected" : "Compare"}
+        </button>
+      )}
       {/* ────────────────────────────────────────────────────────────────
           IMAGE AREA  (272 px tall, full-bleed)
           Layer order (back → front):
@@ -307,13 +344,17 @@ function DriverCard({ driver, index }: { driver: Driver; index: number }) {
 
 // ── Grid container ────────────────────────────────────────────────────────────
 export default function DriversGrid({ drivers }: DriversGridProps) {
-  const [search, setSearch]   = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("standing");
+  const [search, setSearch]       = useState("");
+  const [sortKey, setSortKey]     = useState<SortKey>("standing");
+  const [teamFilter, setTeamFilter] = useState<string | null>(null);
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
 
     let list = drivers.filter((d) => {
+      if (teamFilter && d.team !== teamFilter) return false;
       if (!q) return true;
       return (
         d.full_name?.toLowerCase().includes(q)   ||
@@ -332,12 +373,32 @@ export default function DriversGrid({ drivers }: DriversGridProps) {
     });
 
     return list;
-  }, [drivers, search, sortKey]);
+  }, [drivers, search, sortKey, teamFilter]);
+
+  const selectedDrivers = selectedIds
+    .map((id) => drivers.find((d) => d.driver_id === id))
+    .filter((d): d is Driver => Boolean(d));
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= 2)  return prev; // cap at 2
+      return [...prev, id];
+    });
+  };
+
+  const exitCompare = () => {
+    setCompareMode(false);
+    setSelectedIds([]);
+  };
 
   return (
     <div>
+      {/* ── Season Stats Overview ────────────────────────────────────── */}
+      <DriversStatsOverview drivers={drivers} />
+
       {/* ── Search & Filter Bar ──────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-8 animate-fade-up delay-100">
+      <div className="flex flex-col sm:flex-row gap-3 mb-6 animate-fade-up delay-100">
         <div className="relative flex-1">
           <Search
             size={16}
@@ -369,7 +430,47 @@ export default function DriversGrid({ drivers }: DriversGridProps) {
             ))}
           </select>
         </div>
+
+        <button
+          onClick={() => {
+            if (compareMode) exitCompare();
+            else setCompareMode(true);
+          }}
+          className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-bold text-xs uppercase tracking-widest border transition-all ${
+            compareMode
+              ? "bg-red-600 border-red-500 text-white shadow-[0_0_18px_rgba(220,38,38,0.45)]"
+              : "bg-neutral-900/60 border-neutral-800 text-neutral-300 hover:border-red-600/60 hover:text-white"
+          }`}
+        >
+          <ArrowLeftRight size={14} />
+          {compareMode ? "Exit Compare" : "Compare"}
+        </button>
       </div>
+
+      {/* ── Team filter chips ────────────────────────────────────────── */}
+      <TeamFilterChips
+        drivers={drivers}
+        selectedTeam={teamFilter}
+        onSelect={setTeamFilter}
+      />
+
+      {/* ── Compare panel (renders once 2 drivers selected) ──────────── */}
+      {compareMode && selectedDrivers.length === 2 && (
+        <DriverCompare
+          a={selectedDrivers[0]}
+          b={selectedDrivers[1]}
+          onClear={() => setSelectedIds([])}
+        />
+      )}
+
+      {/* ── Compare-mode hint ────────────────────────────────────────── */}
+      {compareMode && selectedDrivers.length < 2 && (
+        <div className="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-950/30 border border-red-900/40 text-sm text-red-200">
+          <ArrowLeftRight size={14} className="text-red-400" />
+          Select <span className="font-bold text-white">{2 - selectedDrivers.length}</span>{" "}
+          {2 - selectedDrivers.length === 1 ? "more driver" : "drivers"} to see a side-by-side comparison.
+        </div>
+      )}
 
       {/* ── Result count ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-5">
@@ -377,13 +478,19 @@ export default function DriversGrid({ drivers }: DriversGridProps) {
           Showing{" "}
           <span className="text-white font-semibold">{filtered.length}</span> of{" "}
           {drivers.length} drivers
+          {teamFilter && (
+            <span className="ml-2 text-red-400 font-semibold">· {teamFilter}</span>
+          )}
         </p>
-        {search && (
+        {(search || teamFilter) && (
           <button
-            onClick={() => setSearch("")}
+            onClick={() => {
+              setSearch("");
+              setTeamFilter(null);
+            }}
             className="text-xs text-red-500 hover:text-red-400 font-semibold transition-colors"
           >
-            Clear search
+            Reset filters
           </button>
         )}
       </div>
@@ -397,7 +504,15 @@ export default function DriversGrid({ drivers }: DriversGridProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((driver, idx) => (
-            <DriverCard key={driver.driver_id} driver={driver} index={idx} />
+            <DriverCard
+              key={driver.driver_id}
+              driver={driver}
+              index={idx}
+              compareMode={compareMode}
+              selected={selectedIds.includes(driver.driver_id)}
+              onToggle={() => toggleSelect(driver.driver_id)}
+              selectionDisabled={selectedIds.length >= 2}
+            />
           ))}
         </div>
       )}
