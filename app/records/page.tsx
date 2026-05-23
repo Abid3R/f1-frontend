@@ -1,10 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // F1 RECORDS HALL OF FAME
 // Free public APIs (no keys required):
-//   • Jolpica/Ergast      — all-time driver / constructor champion archive
 //   • Open-Meteo          — live weather forecast for the next race circuit
+//   • Jolpica/Ergast      — next race schedule
 //   • REST Countries v3.1 — country flag images
-//   • Wikipedia REST API  — short fact summaries
+// Champion archive (1950-2025) is bundled as static historical data — see
+// ./champions-data.ts. F1 history is immutable so we don't need a network call.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
@@ -25,32 +26,16 @@ import {
   Medal,
   Gauge,
   ChevronRight,
-  AlertCircle,
 } from "lucide-react";
-import RecordImage from "./RecordImage";
+import RecordImage, { type RecordImageFit } from "./RecordImage";
+import {
+  getDriverHallOfFame,
+  getConstructorHallOfFame,
+  DRIVER_CHAMPIONS,
+  CONSTRUCTOR_CHAMPIONS,
+} from "./champions-data";
 
 // ── Types ────────────────────────────────────────────────────────────────────
-interface DriverChamp {
-  position: string;
-  points: string;
-  wins: string;
-  Driver: {
-    driverId: string;
-    givenName: string;
-    familyName: string;
-    nationality: string;
-    code?: string;
-  };
-  Constructors: Array<{ name: string; nationality: string }>;
-}
-
-interface ConstructorChamp {
-  position: string;
-  points: string;
-  wins: string;
-  Constructor: { constructorId: string; name: string; nationality: string };
-}
-
 interface NextRace {
   raceName: string;
   round: string;
@@ -96,6 +81,7 @@ const ICONIC_RECORDS = [
     accent: "#FFD700",
     icon: Crown,
     imageSlot: "most-championships.jpg",
+    fit: "face" as RecordImageFit,
     era: "1994 – 2020",
   },
   {
@@ -109,6 +95,7 @@ const ICONIC_RECORDS = [
     accent: "#00D7B4",
     icon: Trophy,
     imageSlot: "most-wins.jpg",
+    fit: "face" as RecordImageFit,
     era: "2007 – present",
   },
   {
@@ -122,6 +109,7 @@ const ICONIC_RECORDS = [
     accent: "#A855F7",
     icon: Zap,
     imageSlot: "most-poles.png",
+    fit: "center" as RecordImageFit,
     era: "2007 – present",
   },
   {
@@ -135,6 +123,7 @@ const ICONIC_RECORDS = [
     accent: "#3671C6",
     icon: Flame,
     imageSlot: "verstappen-2023.jpg",
+    fit: "face" as RecordImageFit,
     era: "2023 Season",
   },
   {
@@ -148,6 +137,7 @@ const ICONIC_RECORDS = [
     accent: "#FF8000",
     icon: Star,
     imageSlot: "vettel-2010.jpg",
+    fit: "face" as RecordImageFit,
     era: "14 Nov 2010",
   },
   {
@@ -161,6 +151,7 @@ const ICONIC_RECORDS = [
     accent: "#FFAA00",
     icon: Medal,
     imageSlot: "fangio-1957.jpg",
+    fit: "face" as RecordImageFit,
     era: "1957 Season",
   },
   {
@@ -174,6 +165,7 @@ const ICONIC_RECORDS = [
     accent: "#E8002D",
     icon: Trophy,
     imageSlot: "ferrari-dynasty.png",
+    fit: "contain" as RecordImageFit,
     era: "1961 – 2008",
   },
   {
@@ -187,6 +179,7 @@ const ICONIC_RECORDS = [
     accent: "#00FFC8",
     icon: Gauge,
     imageSlot: "monza-2020.png",
+    fit: "center" as RecordImageFit,
     era: "5 Sep 2020",
   },
   {
@@ -200,6 +193,7 @@ const ICONIC_RECORDS = [
     accent: "#FFD700",
     icon: Clock,
     imageSlot: "barrichello-career.jpg",
+    fit: "face" as RecordImageFit,
     era: "1993 – 2011",
   },
   {
@@ -213,6 +207,7 @@ const ICONIC_RECORDS = [
     accent: "#C0C0C0",
     icon: History,
     imageSlot: "farina-1950.jpg",
+    fit: "face" as RecordImageFit,
     era: "13 May 1950",
   },
   {
@@ -226,6 +221,7 @@ const ICONIC_RECORDS = [
     accent: "#1E5BC6",
     icon: Flame,
     imageSlot: "verstappen-streak.jpg",
+    fit: "center" as RecordImageFit,
     era: "May – Sep 2023",
   },
   {
@@ -239,6 +235,7 @@ const ICONIC_RECORDS = [
     accent: "#FFD700",
     icon: Crown,
     imageSlot: "senna-monaco.jpg",
+    fit: "face" as RecordImageFit,
     era: "1987 – 1993",
   },
 ] as const;
@@ -258,42 +255,6 @@ function describeWeather(code: number): { label: string; emoji: string } {
 }
 
 // ── Fetchers ─────────────────────────────────────────────────────────────────
-async function fetchAllTimeDriverChamps(): Promise<DriverChamp[]> {
-  try {
-    const res = await fetch(
-      "https://api.jolpi.ca/ergast/f1/driverStandings/1.json?limit=100",
-      { next: { revalidate: 86400 } }
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
-    const lists = data?.MRData?.StandingsTable?.StandingsLists ?? [];
-    // Flatten — each season list has one entry (the champion)
-    return lists.flatMap(
-      (l: { DriverStandings: DriverChamp[] }) => l.DriverStandings ?? []
-    );
-  } catch {
-    return [];
-  }
-}
-
-async function fetchAllTimeConstructorChamps(): Promise<ConstructorChamp[]> {
-  try {
-    const res = await fetch(
-      "https://api.jolpi.ca/ergast/f1/constructorStandings/1.json?limit=100",
-      { next: { revalidate: 86400 } }
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
-    const lists = data?.MRData?.StandingsTable?.StandingsLists ?? [];
-    return lists.flatMap(
-      (l: { ConstructorStandings: ConstructorChamp[] }) =>
-        l.ConstructorStandings ?? []
-    );
-  } catch {
-    return [];
-  }
-}
-
 async function fetchNextRace(): Promise<NextRace | null> {
   try {
     const res = await fetch(
@@ -340,62 +301,6 @@ async function fetchCountryFlag(country: string): Promise<string | null> {
   }
 }
 
-// Aggregate: count championships per driver
-function aggregateDriverTitles(champs: DriverChamp[]) {
-  const map = new Map<
-    string,
-    {
-      name: string;
-      nationality: string;
-      titles: number;
-      driverId: string;
-      teams: Set<string>;
-    }
-  >();
-  for (const c of champs) {
-    const key = c.Driver.driverId;
-    const existing = map.get(key);
-    if (existing) {
-      existing.titles += 1;
-      c.Constructors.forEach((t) => existing.teams.add(t.name));
-    } else {
-      map.set(key, {
-        driverId: key,
-        name: `${c.Driver.givenName} ${c.Driver.familyName}`,
-        nationality: c.Driver.nationality,
-        titles: 1,
-        teams: new Set(c.Constructors.map((t) => t.name)),
-      });
-    }
-  }
-  return Array.from(map.values()).sort((a, b) => b.titles - a.titles);
-}
-
-function aggregateConstructorTitles(champs: ConstructorChamp[]) {
-  const map = new Map<
-    string,
-    {
-      name: string;
-      nationality: string;
-      titles: number;
-      constructorId: string;
-    }
-  >();
-  for (const c of champs) {
-    const key = c.Constructor.constructorId;
-    const existing = map.get(key);
-    if (existing) existing.titles += 1;
-    else
-      map.set(key, {
-        constructorId: key,
-        name: c.Constructor.name,
-        nationality: c.Constructor.nationality,
-        titles: 1,
-      });
-  }
-  return Array.from(map.values()).sort((a, b) => b.titles - a.titles);
-}
-
 function teamAccent(name: string): string {
   const t = name.toLowerCase();
   if (t.includes("ferrari"))     return "#E8002D";
@@ -419,17 +324,12 @@ function teamAccent(name: string): string {
 // PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 export default async function RecordsPage() {
-  const [driverChamps, constructorChamps, nextRace] = await Promise.all([
-    fetchAllTimeDriverChamps(),
-    fetchAllTimeConstructorChamps(),
-    fetchNextRace(),
-  ]);
+  // Champion archive — bundled historical data (1950 – 2025).
+  const driverHallOfFame = getDriverHallOfFame().slice(0, 15);
+  const constructorHallOfFame = getConstructorHallOfFame().slice(0, 12);
 
-  const driverHallOfFame = aggregateDriverTitles(driverChamps).slice(0, 15);
-  const constructorHallOfFame =
-    aggregateConstructorTitles(constructorChamps).slice(0, 12);
-
-  // Hydrate weather + flag for the next race only when coordinates exist.
+  // Live race + weather data.
+  const nextRace = await fetchNextRace();
   const [weather, nextRaceFlag] = await Promise.all([
     nextRace
       ? fetchWeather(nextRace.Circuit.Location.lat, nextRace.Circuit.Location.long)
@@ -439,6 +339,11 @@ export default async function RecordsPage() {
 
   const maxTitles = driverHallOfFame[0]?.titles ?? 1;
   const maxConstTitles = constructorHallOfFame[0]?.titles ?? 1;
+  const totalDriverChampionships = DRIVER_CHAMPIONS.length;
+  const totalConstructorChampionships = CONSTRUCTOR_CHAMPIONS.length;
+  const firstChampionshipYear = DRIVER_CHAMPIONS[0]?.year ?? 1950;
+  const latestChampionshipYear =
+    DRIVER_CHAMPIONS[DRIVER_CHAMPIONS.length - 1]?.year ?? 1950;
 
   return (
     <main className="min-h-screen bg-[#080808] text-white">
@@ -463,16 +368,18 @@ export default async function RecordsPage() {
               The <span className="text-red-600">Records</span>
             </h1>
             <p className="text-neutral-400 max-w-2xl text-lg leading-relaxed">
-              Seventy-five years of Formula One distilled into its most iconic
-              numbers. Live all-time champion data from Jolpica, weather for the
-              next Grand Prix from Open-Meteo, and a curated archive of the
-              moments that defined the sport.
+              Seventy-six years of Formula One distilled into its most iconic
+              numbers. A verified archive of every Drivers&apos; and
+              Constructors&apos; Champion from {firstChampionshipYear} to{" "}
+              {latestChampionshipYear}, weather for the next Grand Prix from
+              Open-Meteo, and a curated record of the moments that defined the
+              sport.
             </p>
             <div className="flex flex-wrap items-center gap-2 mt-5 text-[11px] font-bold uppercase tracking-widest">
-              <SourceChip label="Jolpica" />
+              <SourceChip label={`${totalDriverChampionships} Drivers' Titles`} />
+              <SourceChip label={`${totalConstructorChampionships} Constructors' Titles`} />
               <SourceChip label="Open-Meteo" />
               <SourceChip label="REST Countries" />
-              <SourceChip label="Curated Archive" />
             </div>
           </div>
         </div>
@@ -512,6 +419,7 @@ export default async function RecordsPage() {
                   <RecordImage
                     src={`/images/records/${rec.imageSlot}`}
                     alt={rec.holder}
+                    fit={rec.fit}
                   />
                   {/* Dark overlay so text always reads */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/10 pointer-events-none" />
@@ -581,87 +489,78 @@ export default async function RecordsPage() {
       <section className="px-6 py-12 max-w-7xl mx-auto">
         <SectionHeader
           icon={Crown}
-          eyebrow="Live Archive"
+          eyebrow={`${firstChampionshipYear} – ${latestChampionshipYear}`}
           title="All-Time Drivers' Champions"
-          source="Jolpica F1 API"
+          source="Verified Championship Archive"
         />
 
-        {driverHallOfFame.length === 0 ? (
-          <EmptyState message="Champion archive is unavailable right now." />
-        ) : (
-          <div className="mt-6 glass-card rounded-2xl border border-neutral-800/60 overflow-hidden">
-            <div className="grid grid-cols-12 px-5 py-3 border-b border-neutral-800 text-[10px] font-black uppercase tracking-widest text-neutral-500 bg-neutral-950/60">
-              <div className="col-span-1">#</div>
-              <div className="col-span-5">Driver</div>
-              <div className="col-span-3 hidden sm:block">Nationality</div>
-              <div className="col-span-2 text-right">Titles</div>
-              <div className="col-span-1 text-right">—</div>
-            </div>
-            <div className="divide-y divide-neutral-900/60">
-              {driverHallOfFame.map((d, idx) => {
-                const widthPct = Math.max(8, (d.titles / maxTitles) * 100);
-                const topTier = idx < 3;
-                const teamColor = teamAccent(
-                  Array.from(d.teams)[0] ?? ""
-                );
-                return (
-                  <div
-                    key={d.driverId}
-                    className="grid grid-cols-12 items-center px-5 py-3.5 text-sm hover:bg-red-950/10 transition-colors relative"
-                  >
-                    <div className="col-span-1">
-                      <span
-                        className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-black ${
-                          topTier
-                            ? "bg-red-600 text-white shadow-[0_0_18px_rgba(220,38,38,0.5)]"
-                            : "bg-neutral-900 text-neutral-400 border border-neutral-800"
-                        }`}
-                      >
-                        {idx + 1}
-                      </span>
-                    </div>
-                    <div className="col-span-5 min-w-0">
-                      <p className="text-white font-bold truncate flex items-center gap-1.5">
-                        {d.name}
-                        {topTier && (
-                          <Crown size={12} className="text-yellow-400 shrink-0" />
-                        )}
-                      </p>
-                      <p className="text-[10px] text-neutral-500 truncate uppercase tracking-widest mt-0.5">
-                        {Array.from(d.teams).slice(0, 2).join(" · ")}
-                      </p>
-                    </div>
-                    <div className="col-span-3 hidden sm:block text-neutral-400 text-xs truncate">
-                      {d.nationality}
-                    </div>
-                    <div className="col-span-2 text-right">
-                      <span
-                        className="font-black text-lg"
-                        style={{ color: teamColor }}
-                      >
-                        {d.titles}
-                      </span>
-                    </div>
-                    <div className="col-span-1 flex justify-end">
-                      <ChevronRight
-                        size={14}
-                        className="text-neutral-700"
-                      />
-                    </div>
-                    {/* Bar accent */}
-                    <div
-                      className="absolute bottom-0 left-0 h-[2px] transition-all duration-700"
-                      style={{
-                        width: `${widthPct}%`,
-                        background: `linear-gradient(90deg, ${teamColor}cc, ${teamColor}33)`,
-                      }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+        <div className="mt-6 glass-card rounded-2xl border border-neutral-800/60 overflow-hidden">
+          <div className="grid grid-cols-12 px-5 py-3 border-b border-neutral-800 text-[10px] font-black uppercase tracking-widest text-neutral-500 bg-neutral-950/60">
+            <div className="col-span-1">#</div>
+            <div className="col-span-5">Driver</div>
+            <div className="col-span-3 hidden sm:block">Nationality</div>
+            <div className="col-span-2 text-right">Titles</div>
+            <div className="col-span-1 text-right">—</div>
           </div>
-        )}
+          <div className="divide-y divide-neutral-900/60">
+            {driverHallOfFame.map((d, idx) => {
+              const widthPct = Math.max(8, (d.titles / maxTitles) * 100);
+              const topTier = idx < 3;
+              const teamColor = teamAccent(d.teams[0] ?? "");
+              return (
+                <div
+                  key={d.driverId}
+                  className="grid grid-cols-12 items-center px-5 py-3.5 text-sm hover:bg-red-950/10 transition-colors relative"
+                >
+                  <div className="col-span-1">
+                    <span
+                      className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-black ${
+                        topTier
+                          ? "bg-red-600 text-white shadow-[0_0_18px_rgba(220,38,38,0.5)]"
+                          : "bg-neutral-900 text-neutral-400 border border-neutral-800"
+                      }`}
+                    >
+                      {idx + 1}
+                    </span>
+                  </div>
+                  <div className="col-span-5 min-w-0">
+                    <p className="text-white font-bold truncate flex items-center gap-1.5">
+                      {d.name}
+                      {topTier && (
+                        <Crown size={12} className="text-yellow-400 shrink-0" />
+                      )}
+                    </p>
+                    <p className="text-[10px] text-neutral-500 truncate uppercase tracking-widest mt-0.5">
+                      {d.teams.slice(0, 2).join(" · ")}
+                    </p>
+                  </div>
+                  <div className="col-span-3 hidden sm:block text-neutral-400 text-xs truncate">
+                    {d.nationality}
+                  </div>
+                  <div className="col-span-2 text-right">
+                    <span
+                      className="font-black text-lg"
+                      style={{ color: teamColor }}
+                    >
+                      {d.titles}
+                    </span>
+                  </div>
+                  <div className="col-span-1 flex justify-end">
+                    <ChevronRight size={14} className="text-neutral-700" />
+                  </div>
+                  {/* Bar accent */}
+                  <div
+                    className="absolute bottom-0 left-0 h-[2px] transition-all duration-700"
+                    style={{
+                      width: `${widthPct}%`,
+                      background: `linear-gradient(90deg, ${teamColor}cc, ${teamColor}33)`,
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </section>
 
       {/* ──────────────────── CONSTRUCTOR HALL OF FAME ──────────────────── */}
@@ -670,64 +569,61 @@ export default async function RecordsPage() {
           icon={Trophy}
           eyebrow="Constructor Dynasty"
           title="All-Time Constructors' Champions"
-          source="Jolpica F1 API"
+          source="Verified Championship Archive"
         />
 
-        {constructorHallOfFame.length === 0 ? (
-          <EmptyState message="Constructors archive unavailable right now." />
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-            {constructorHallOfFame.map((c, idx) => {
-              const accent = teamAccent(c.name);
-              const widthPct = Math.max(10, (c.titles / maxConstTitles) * 100);
-              return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+          {constructorHallOfFame.map((c, idx) => {
+            const accent = teamAccent(c.displayName);
+            const widthPct = Math.max(10, (c.titles / maxConstTitles) * 100);
+            const yearRange = `${c.years[0]} – ${c.years[c.years.length - 1]}`;
+            return (
+              <div
+                key={c.constructorId}
+                className="professional-card rounded-xl p-5 border border-neutral-800/60 relative overflow-hidden"
+              >
                 <div
-                  key={c.constructorId}
-                  className="professional-card rounded-xl p-5 border border-neutral-800/60 relative overflow-hidden"
-                >
-                  <div
-                    className="absolute top-0 left-0 right-0 h-1"
-                    style={{ background: accent }}
-                  />
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p
-                        className="text-[10px] font-black uppercase tracking-widest"
-                        style={{ color: accent }}
-                      >
-                        Rank #{idx + 1}
-                      </p>
-                      <h3 className="text-white font-black text-lg leading-tight mt-1 truncate">
-                        {c.name}
-                      </h3>
-                      <p className="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">
-                        {c.nationality}
-                      </p>
-                    </div>
-                    <div
-                      className="shrink-0 text-3xl font-black leading-none"
+                  className="absolute top-0 left-0 right-0 h-1"
+                  style={{ background: accent }}
+                />
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p
+                      className="text-[10px] font-black uppercase tracking-widest"
                       style={{ color: accent }}
                     >
-                      {c.titles}
-                    </div>
+                      Rank #{idx + 1}
+                    </p>
+                    <h3 className="text-white font-black text-lg leading-tight mt-1 truncate">
+                      {c.displayName}
+                    </h3>
+                    <p className="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">
+                      {c.nationality} · {yearRange}
+                    </p>
                   </div>
-                  <div className="mt-4 h-1 rounded-full bg-neutral-900 overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${widthPct}%`,
-                        background: `linear-gradient(90deg, ${accent}, ${accent}55)`,
-                      }}
-                    />
+                  <div
+                    className="shrink-0 text-3xl font-black leading-none"
+                    style={{ color: accent }}
+                  >
+                    {c.titles}
                   </div>
-                  <p className="text-[10px] text-neutral-500 uppercase tracking-widest font-bold mt-3">
-                    Constructors&apos; Titles
-                  </p>
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <div className="mt-4 h-1 rounded-full bg-neutral-900 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${widthPct}%`,
+                      background: `linear-gradient(90deg, ${accent}, ${accent}55)`,
+                    }}
+                  />
+                </div>
+                <p className="text-[10px] text-neutral-500 uppercase tracking-widest font-bold mt-3">
+                  Constructors&apos; Titles
+                </p>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* ──────────────────── NEXT RACE WEATHER ──────────────────── */}
@@ -856,11 +752,14 @@ export default async function RecordsPage() {
                 Every figure on this page is verifiable.
               </h3>
               <p className="text-neutral-400 text-sm leading-relaxed">
-                Historical champion data is fetched live from the Jolpica/Ergast
-                F1 archive — the same archive used by the F1 community since
-                2009. Weather is sourced from Open-Meteo&apos;s free non-commercial
-                API. Country flags come from REST Countries. No API keys, no
-                paywalls, no scraping — just open data, professionally presented.
+                Champion data is a curated archive of every Formula One World
+                Championship from {firstChampionshipYear} to{" "}
+                {latestChampionshipYear}, verified against the official FIA
+                records — no flaky network calls, no missing entries. Live
+                weather is sourced from Open-Meteo&apos;s free non-commercial
+                API, the next race schedule from the Jolpica/Ergast project, and
+                country flags from REST Countries. No API keys, no paywalls — just
+                open data, professionally presented.
               </p>
             </div>
           </div>
@@ -904,15 +803,6 @@ function SectionHeader({
       <span className="text-[10px] text-neutral-600 font-bold uppercase tracking-widest">
         Source · {source}
       </span>
-    </div>
-  );
-}
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="mt-6 flex items-start gap-3 p-5 rounded-xl border border-neutral-800/60 bg-neutral-950/60">
-      <AlertCircle size={18} className="text-neutral-500 mt-0.5 shrink-0" />
-      <p className="text-sm text-neutral-400">{message}</p>
     </div>
   );
 }
