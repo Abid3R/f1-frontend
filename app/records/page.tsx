@@ -27,6 +27,7 @@ import {
   ChevronRight,
   AlertCircle,
 } from "lucide-react";
+import RecordImage from "./RecordImage";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface DriverChamp {
@@ -120,7 +121,7 @@ const ICONIC_RECORDS = [
       "Considered the greatest qualifier of the modern era. Hamilton surpassed Schumacher's pole record (68) in 2017 and reached his 100th pole at the 2021 Spanish GP.",
     accent: "#A855F7",
     icon: Zap,
-    imageSlot: "most-poles.jpg",
+    imageSlot: "most-poles.png",
     era: "2007 – present",
   },
   {
@@ -172,7 +173,7 @@ const ICONIC_RECORDS = [
       "Ferrari's red dynasty: 16 Constructors' Championships, including six in a row during the Schumacher era (1999–2004). The Tifosi's pride.",
     accent: "#E8002D",
     icon: Trophy,
-    imageSlot: "ferrari-dynasty.jpg",
+    imageSlot: "ferrari-dynasty.png",
     era: "1961 – 2008",
   },
   {
@@ -185,7 +186,7 @@ const ICONIC_RECORDS = [
       "Hamilton's qualifying lap at Monza 2020 averaged 264.362 km/h (164.267 mph) — the fastest officially recorded lap in F1 history.",
     accent: "#00FFC8",
     icon: Gauge,
-    imageSlot: "monza-2020.jpg",
+    imageSlot: "monza-2020.png",
     era: "5 Sep 2020",
   },
   {
@@ -508,21 +509,12 @@ export default async function RecordsPage() {
                     background: `linear-gradient(135deg, ${rec.accent}33 0%, #0a0a0a 70%)`,
                   }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <RecordImage
                     src={`/images/records/${rec.imageSlot}`}
                     alt={rec.holder}
-                    className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:scale-105 transition-all duration-700"
-                    onError={(e) => {
-                      // Hide broken image so the gradient fallback shows.
-                      (e.currentTarget as HTMLImageElement).style.display = "none";
-                    }}
-                    onLoad={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.opacity = "1";
-                    }}
                   />
                   {/* Dark overlay so text always reads */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/10 pointer-events-none" />
 
                   {/* Big icon watermark */}
                   <Icon
