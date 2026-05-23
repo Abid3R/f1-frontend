@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/drivers", label: "Drivers" },
   { href: "/races", label: "Races" },
   { href: "/insights", label: "Insights" },
+  { href: "/records", label: "Records" },
   { href: "/predictions", label: "Predictions" },
 ];
 
