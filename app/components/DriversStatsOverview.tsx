@@ -31,8 +31,14 @@ export default function DriversStatsOverview({
       .filter((t): t is string => Boolean(t && t.trim()))
   );
   const totalTeams = teams.size;
-  const totalPoints = drivers.reduce((acc, d) => acc + (d.points ?? 0), 0);
-  const totalWins = drivers.reduce((acc, d) => acc + (d.wins ?? 0), 0);
+  // NOTE: backend may serialise points/wins as strings (Ergast quirk).
+  // Coerce to Number, treat NaN as 0.
+  const toNum = (v: unknown) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+  const totalPoints = drivers.reduce((acc, d) => acc + toNum(d.points), 0);
+  const totalWins   = drivers.reduce((acc, d) => acc + toNum(d.wins),   0);
 
   const cards: StatCard[] = [
     {

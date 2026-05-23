@@ -158,24 +158,6 @@ function DriverCard({
       }`}
       style={{ animationDelay: `${0.1 + index * 0.04}s` }}
     >
-      {/* Compare checkbox — only visible in compare mode */}
-      {compareMode && (
-        <button
-          onClick={onToggle}
-          disabled={selectionDisabled && !selected}
-          className={`absolute top-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold backdrop-blur-sm transition-all ${
-            selected
-              ? "bg-red-600 text-white border border-red-500 shadow-[0_0_18px_rgba(220,38,38,0.55)]"
-              : selectionDisabled
-              ? "bg-neutral-900/60 text-neutral-600 border border-neutral-800 cursor-not-allowed"
-              : "bg-black/60 text-neutral-200 border border-neutral-700/60 hover:border-red-500/60 hover:text-white"
-          }`}
-          aria-pressed={selected}
-        >
-          {selected ? <CheckSquare size={12} /> : <Square size={12} />}
-          {selected ? "Selected" : "Compare"}
-        </button>
-      )}
       {/* ────────────────────────────────────────────────────────────────
           IMAGE AREA  (272 px tall, full-bleed)
           Layer order (back → front):
@@ -288,11 +270,32 @@ function DriverCard({
       {/* ────────────────────────────────────────────────────────────────
           STATS STRIP  — compact bottom bar
           ──────────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-4 py-3 bg-[#0d0d0d] border-t border-neutral-800/50">
-        {/* Nationality */}
-        <div className="flex items-center gap-1.5 text-xs text-neutral-500 min-w-0">
-          <Flag size={11} className="text-neutral-600 shrink-0" />
-          <span className="truncate">{driver.nationality ?? "—"}</span>
+      <div className="flex items-center justify-between gap-2 px-4 py-3 bg-[#0d0d0d] border-t border-neutral-800/50">
+        {/* Left cluster: optional Compare toggle + Nationality */}
+        <div className="flex items-center gap-2 min-w-0">
+          {compareMode && (
+            <button
+              onClick={onToggle}
+              disabled={selectionDisabled && !selected}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border transition-all shrink-0 ${
+                selected
+                  ? "bg-red-600 text-white border-red-500 shadow-[0_0_14px_rgba(220,38,38,0.45)]"
+                  : selectionDisabled
+                  ? "bg-neutral-900 text-neutral-700 border-neutral-800 cursor-not-allowed"
+                  : "bg-neutral-900 text-neutral-300 border-neutral-700 hover:border-red-500/60 hover:text-white"
+              }`}
+              aria-pressed={selected}
+            >
+              {selected ? <CheckSquare size={11} /> : <Square size={11} />}
+              {selected ? "Picked" : "Pick"}
+            </button>
+          )}
+
+          {/* Nationality */}
+          <div className="flex items-center gap-1.5 text-xs text-neutral-500 min-w-0">
+            <Flag size={11} className="text-neutral-600 shrink-0" />
+            <span className="truncate">{driver.nationality ?? "—"}</span>
+          </div>
         </div>
 
         {/* Points + Wins + bar */}
