@@ -4,13 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Menu, X, Zap } from "lucide-react";
+import HudToggle from "./HudToggle";
 
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/standings", label: "Standings" },
   { href: "/drivers", label: "Drivers" },
   { href: "/races", label: "Races" },
+  { href: "/telemetry", label: "Telemetry" },
   { href: "/insights", label: "Insights" },
+  { href: "/circuits", label: "Circuits" },
   { href: "/records", label: "Records" },
   { href: "/predictions", label: "Predictions" },
 ];
@@ -80,6 +83,7 @@ export default function Navbar() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
+            <HudToggle />
             <Link
               href="/predictions"
               className="btn-red-glow flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold text-white"

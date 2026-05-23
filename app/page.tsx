@@ -2,6 +2,7 @@ import Link from "next/link";
 import ClientImage from "./components/ClientImage";
 import NextRaceCountdown from "./components/NextRaceCountdown";
 import LiveStatsTicker from "./components/LiveStatsTicker";
+import GarageHero from "./components/GarageHero";
 import {
   BarChart3,
   Users,
@@ -226,6 +227,11 @@ export default function Home() {
           1b. NEXT RACE COUNTDOWN (live)
           ================================================================ */}
       <NextRaceCountdown />
+
+      {/* ================================================================
+          1b2. MY GARAGE (personalized hero — Phase 5b)
+          ================================================================ */}
+      <GarageHero />
 
       {/* ================================================================
           1c. LIVE F1 FACTS TICKER

@@ -4,6 +4,8 @@ import Navbar from "./components/Navbar";
 import ScrollProgressBar from "./components/ScrollProgressBar";
 import BackToTopButton from "./components/BackToTopButton";
 import CommandPalette from "./components/CommandPalette";
+import { HudThemeProvider } from "@/lib/hud-theme";
+import { GarageProvider } from "@/lib/garage";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -35,14 +37,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body className="bg-[#080808] text-white antialiased">
-        <ScrollProgressBar />
-        <Navbar />
-        <CommandPalette />
-        <BackToTopButton />
+        <HudThemeProvider>
+          <GarageProvider>
+            <ScrollProgressBar />
+            <Navbar />
+            <CommandPalette />
+            <BackToTopButton />
 
-        <div className="pt-16">{children}</div>
+            <div className="pt-16">{children}</div>
 
         {/* ========== FOOTER ========== */}
         <footer className="bg-black border-t border-neutral-900 mt-20 relative overflow-hidden">
@@ -116,6 +120,8 @@ export default function RootLayout({
 
           </div>
         </footer>
+          </GarageProvider>
+        </HudThemeProvider>
       </body>
     </html>
   );

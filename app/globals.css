@@ -630,3 +630,114 @@ body {
   background: linear-gradient(90deg, #dc2626, #ef4444);
   transition: width 0.8s ease-out;
 }
+
+/* ========================
+   PIT-WALL HUD THEME
+   Triggered by data-theme="hud" on <html>
+   ======================== */
+html[data-theme="hud"] {
+  --f1-red: #00e7ff;            /* cyan accent replaces red */
+  --f1-red-dark: #0094a6;
+  --f1-black: #04060a;
+  --f1-dark: #06090f;
+  --f1-card: #07101a;
+  --f1-border: rgba(0, 231, 255, 0.18);
+  --f1-border-red: rgba(0, 231, 255, 0.55);
+  --hud-neon-green: #1aff8c;
+  --hud-hot-pink: #ff2e88;
+}
+html[data-theme="hud"] body {
+  background:
+    radial-gradient(circle at 20% -10%, rgba(0, 231, 255, 0.08), transparent 55%),
+    radial-gradient(circle at 110% 110%, rgba(255, 46, 136, 0.08), transparent 55%),
+    var(--f1-black);
+  text-shadow: 0 0 1px rgba(0, 231, 255, 0.15);
+}
+html[data-theme="hud"] ::-webkit-scrollbar-thumb {
+  background: var(--f1-red);
+}
+html[data-theme="hud"] ::selection {
+  background: rgba(0, 231, 255, 0.28);
+}
+/* Faint scanline overlay for that pit-wall monitor feel */
+html[data-theme="hud"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 231, 255, 0.025) 0px,
+    rgba(0, 231, 255, 0.025) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 1;
+  mix-blend-mode: screen;
+}
+/* Re-tint red accents (text + borders) to neon cyan in HUD mode */
+html[data-theme="hud"] .text-red-500,
+html[data-theme="hud"] .text-red-400,
+html[data-theme="hud"] .text-red-600 {
+  color: var(--f1-red) !important;
+  text-shadow: 0 0 6px rgba(0, 231, 255, 0.45);
+}
+html[data-theme="hud"] .bg-red-600,
+html[data-theme="hud"] .bg-red-700,
+html[data-theme="hud"] .bg-red-500 {
+  background-color: var(--f1-red) !important;
+  color: #04060a !important;
+  box-shadow: 0 0 12px rgba(0, 231, 255, 0.45);
+}
+html[data-theme="hud"] .border-red-600,
+html[data-theme="hud"] .border-red-500,
+html[data-theme="hud"] .border-red-700 {
+  border-color: var(--f1-red) !important;
+}
+
+/* Tailwind v4 slider utilities used by predictor pages */
+.f1-slider {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--f1-red) 0%,
+    var(--f1-red) var(--slider-pct, 50%),
+    rgba(255, 255, 255, 0.12) var(--slider-pct, 50%),
+    rgba(255, 255, 255, 0.12) 100%
+  );
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+}
+.f1-slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border: 2px solid var(--f1-red);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.45);
+  transition: transform 0.15s ease;
+}
+.f1-slider:hover::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+.f1-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border: 2px solid var(--f1-red);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.45);
+}
+
+/* Tyre compound colour chips (Pirelli) */
+.tyre-soft { background: #ef4444; }
+.tyre-medium { background: #facc15; color: #111; }
+.tyre-hard { background: #f4f4f5; color: #111; }
+.tyre-intermediate { background: #16a34a; }
+.tyre-wet { background: #2563eb; }
